@@ -1,21 +1,43 @@
-import { Tab, TabList, TabPanel, TabPanels, Tabs } from "@chakra-ui/react";
+import {
+  Tab,
+  TabList,
+  TabPanel,
+  TabPanels,
+  Tabs,
+  Textarea,
+} from "@chakra-ui/react";
 import { useEffect, useState } from "react";
-import Messages from "./Messages";
-import WritingSample from "./WritingSample";
+// import WritingSample from "./ WritingSample;";
+
+type Email = {
+  sender: string;
+  timestamp: string;
+  content: string;
+};
+
+function parseEmails(emails: string): any {
+  const emailRegex = /On\s.*?wrote:/gs;
+  const emailMessages = emails.split(emailRegex);
+
+  // const parsedEmails = [];
+  // let i = 0;
+  // while (i < emailMessages.length - 1) {
+  //   parsedEmails.push(`${emailMessages[i]} --- ${emailMessages[i + 1]}}`);
+  //   i += 2;
+  // }
+
+  return emailMessages;
+}
 
 const EmailComponent = () => {
   const [writingSample, setWritingSample] = useState("");
-  useEffect(() => {
-    const handleMessage = (request, sender, sendResponse) => {
-      // if (request.action === "displayInPopup") {
-      console.log("Selected text:", request);
-      // Add your logic here to display the text in the popup
-      // }
-    };
+  const [storedText, setStoredText] = useState("");
 
-    chrome.runtime.onMessage.addListener(handleMessage);
-    console.log("JUST ADDED LISTENER");
-    return () => chrome.runtime.onMessage.removeListener(handleMessage);
+  useEffect(() => {
+    chrome.runtime.sendMessage({ action: "getStoredText" }, (response) => {
+      setStoredText(response.storedText);
+      console.log("GOTIT", parseEmails(response.storedText));
+    });
   }, []);
 
   const handleClick = () => {
@@ -34,18 +56,13 @@ const EmailComponent = () => {
 
       <TabPanels>
         <TabPanel>
-          <Messages
-            messages={[
-              { from: "me", text: "Hi there!" },
-              { from: "computer", text: "Hello!" },
-            ]}
-          />
+          <Textarea value={storedText} />
         </TabPanel>
         <TabPanel>
-          <WritingSample
+          {/* <WritingSample
             writingSample={writingSample}
             setWritingSample={setWritingSample}
-          />
+          /> */}
         </TabPanel>
       </TabPanels>
     </Tabs>

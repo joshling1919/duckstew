@@ -1,14 +1,4 @@
-// import reloadOnUpdate from "virtual:reload-on-update-in-background-script";
-
-// reloadOnUpdate("pages/background");
-
-/**
- * Extension reloading is necessary because the browser automatically caches the css.
- * If you do not use the css of the content script, please delete it.
- */
-// reloadOnUpdate("pages/content/style.scss");
-
-console.log("background loaded HI");
+let storedText = "";
 
 chrome.runtime.onInstalled.addListener(() => {
   console.log("HELLO??");
@@ -25,11 +15,15 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     const selectedText = info.selectionText.trim();
 
     if (selectedText) {
-      // Send the selected text to the popup
+      // Store the selected text
+      storedText = selectedText;
       console.log(selectedText, "HEYO");
-      chrome.runtime.sendMessage({ greeting: "hello" }, function (response) {
-        console.log(response);
-      });
     }
+  }
+});
+
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "getStoredText") {
+    sendResponse({ storedText: storedText });
   }
 });
